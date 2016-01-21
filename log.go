@@ -1,9 +1,6 @@
 package log
 
-import (
-	"fmt"
-	"sync"
-)
+import "sync"
 
 type Log struct {
 	interceptors []Interceptor
@@ -12,20 +9,25 @@ type Log struct {
 	sync.Mutex
 }
 
-func (l *Log) Debug(fields map[string]interface{}, format string, a ...interface{}) {
-	l.handle(Debug, fmt.Sprintf(format, a), fields)
+func (l *Log) Debug(fields map[string]interface{}, msg string) {
+	l.handle(Debug, msg, fields)
 }
 
-func (l *Log) Info(fields map[string]interface{}, format string, a ...interface{}) {
-	l.handle(Info, fmt.Sprintf(format, a), fields)
+func (l *Log) Info(fields map[string]interface{}, msg string) {
+	l.handle(Info, msg, fields)
 }
 
-func (l *Log) Warn(fields map[string]interface{}, format string, a ...interface{}) {
-	l.handle(Warn, fmt.Sprintf(format, a), fields)
+func (l *Log) Warn(fields map[string]interface{}, msg string) {
+	l.handle(Warn, msg, fields)
 }
 
-func (l *Log) Error(fields map[string]interface{}, format string, a ...interface{}) {
-	l.handle(Error, fmt.Sprintf(format, a), fields)
+func (l *Log) Error(fields map[string]interface{}, err error) {
+	l.handle(Error, err.Error(), fields)
+}
+
+func (l *Log) Fatal(fields map[string]interface{}, err error) {
+	l.handle(Error, err.Error(), fields)
+	panic(err)
 }
 
 // merge returns a new map with elements from each of the provided maps.
