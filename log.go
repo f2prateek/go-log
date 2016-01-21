@@ -1,6 +1,11 @@
 package log
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
+
+var clock func() time.Time = time.Now
 
 type Builder struct {
 	Interceptors []Interceptor
@@ -92,13 +97,14 @@ func (l *Log) handle(level LogLevel, msg string, fields map[string]interface{}) 
 	defer l.Unlock()
 
 	e := &Entry{
-		Level:   level,
-		Message: msg,
-		Fields:  merge(l.fields, fields),
+		Level:     level,
+		Timestamp: clock(),
+		Message:   msg,
+		Fields:    merge(l.fields, fields),
 	}
 
 	for _, interceptor := range l.interceptors {
-		if stop := interceptor.Intercept(e); stop {
+		if proceed := interceptor.Intercept(e); !proceed {
 			return
 		}
 	}
