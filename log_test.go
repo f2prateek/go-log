@@ -105,3 +105,19 @@ func TestHandlerFunc(t *testing.T) {
 	assert.Equal(t, Debug, e.Level)
 	assert.Equal(t, "test", e.Message)
 }
+
+func TestLevelString(t *testing.T) {
+	cases := []struct {
+		level LogLevel
+		s     string
+	}{
+		{Debug, "debug"},
+		{Info, "info"},
+		{Warn, "warn"},
+		{Error, "error"},
+	}
+
+	for _, c := range cases {
+		assert.Equal(t, c.s, c.level.String())
+	}
+}
