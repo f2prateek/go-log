@@ -37,7 +37,7 @@ func (r *RecorderInterceptor) Intercept(e *Entry) bool {
 	return true
 }
 
-func TestInterceptor(t *testing.T) {
+func TestChain(t *testing.T) {
 	clock = func() time.Time {
 		return time.Unix(0, 0)
 	}
@@ -71,4 +71,37 @@ func TestInterceptor(t *testing.T) {
 			"key": "value",
 		}, e.Fields)
 	}
+}
+
+func TestInterceptorFunc(t *testing.T) {
+	entryC := make(chan *Entry, 1)
+	f := func(e *Entry) bool {
+		entryC <- e
+		return true
+	}
+
+	InterceptorFunc(f).Intercept(&Entry{
+		Level:   Debug,
+		Message: "test",
+	})
+
+	e := <-entryC
+	assert.Equal(t, Debug, e.Level)
+	assert.Equal(t, "test", e.Message)
+}
+
+func TestHandlerFunc(t *testing.T) {
+	entryC := make(chan *Entry, 1)
+	f := func(e *Entry) {
+		entryC <- e
+	}
+
+	HandlerFunc(f).Handle(&Entry{
+		Level:   Debug,
+		Message: "test",
+	})
+
+	e := <-entryC
+	assert.Equal(t, Debug, e.Level)
+	assert.Equal(t, "test", e.Message)
 }
