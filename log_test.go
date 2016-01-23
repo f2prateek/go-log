@@ -121,3 +121,22 @@ func TestLevelString(t *testing.T) {
 		assert.Equal(t, c.s, c.level.String())
 	}
 }
+
+func TestInterceptorCanShortCircuit(t *testing.T) {
+	recorderHandler := NewRecorderHandler()
+
+	b := NewBuilder()
+	b.AddInterceptor(InterceptorFunc(func(e *Entry) bool {
+		return false
+	}))
+	b.AddHandler(recorderHandler)
+	logger := b.Build()
+
+	logger.Debug(nil, "foo")
+
+	select {
+	case <-recorderHandler.entryC:
+		t.Error("handler should not have received any messages")
+	default:
+	}
+}
